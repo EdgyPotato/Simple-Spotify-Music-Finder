@@ -1,4 +1,4 @@
-# Spotify Music Finder
+# Simple Spotify Music Finder
 This is the final project for the Multimedia Web Programming course, where me and my friends created a rich internet application using Spotify API with AJAX.
 
 ## Preview
