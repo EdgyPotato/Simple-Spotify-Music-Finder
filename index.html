@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<title>Music</title>
+
+		<!-- Fonts -->
+		<link rel="preconnect" href="https://fonts.bunny.net" />
+		<link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+		<script src="https://cdn.tailwindcss.com"></script>
+		<!-- Styles -->
+		<style>
+			.scroll-container {
+				overflow-x: auto;
+				/* Enable horizontal scrolling */
+				overflow-y: hidden;
+				/* Disable vertical scrolling (if not needed) */
+				scrollbar-width: none;
+				/* Firefox */
+			}
+
+			.scroll-container::-webkit-scrollbar {
+				display: none;
+				/* Chrome, Safari, and newer versions of Edge */
+			}
+		</style>
+	</head>
+
+	<body class="font-sans antialiased dark:bg-black dark:text-white/50">
+		<nav class="bg-white border-gray-200 dark:bg-gray-900 w-full fixed">
+			<div class="flex flex-wrap items-center justify-between mx-auto p-4">
+				<div>
+					<div class="flex ml-80">
+						<!-- Previous Button -->
+						<button
+							id="previous-button"
+							class="flex items-center justify-center px-3 h-8 me-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white invisible">
+							<svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
+							</svg>
+							Back
+						</button>
+					</div>
+				</div>
+				<div>
+					<form class="search">
+						<label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+						<div class="relative z-50">
+							<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+								<svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+									<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+								</svg>
+							</div>
+							<input
+								type="search"
+								id="default-search"
+								class="block w-96 p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+								placeholder="Search Songs, Albums..."
+								required />
+						</div>
+					</form>
+				</div>
+				<div class="flex items-center md:order-2 space-x-1 md:space-x-2">
+					<a
+						id="login-button"
+						class="text-gray-800 dark:text-white bg-sky-900 hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 md:px-5 md:py-2.5 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+						>Login</a
+					>
+					<a id="profile-button" class="flex items-center bg-gray-700 text-white rounded-lg px-5 py-2 font-bold text-sm cursor-pointer"> </a>
+				</div>
+			</div>
+			<div id="search-results" class="bg-gradient-to-t from-black"></div>
+		</nav>
+
+		<aside id="default-sidebar" class="fixed top-0 left-0 z-0 w-80 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+			<div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800 scroll-container">
+				<div class="max-w-xs flex flex-col rounded-lg shadow-sm">
+					<button
+						type="button"
+						id="home-button"
+						class="py-3 px-4 inline-flex items-center gap-x-2 rounded-md text-sm font-medium focus:z-10 border border-gray-600 bg-gray-700 text-gray-300 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none">
+						Home
+					</button>
+					<br />
+					<br />
+					<div id="library-table">
+						<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+							<table class="w-full text-sm text-left rtl:text-right text-gray-200 dark:text-gray-100">
+								<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-100">
+									<tr>
+										<th colspan="2" scope="col" class="text-center py-4">Library</th>
+									</tr>
+								</thead>
+								<tbody id="library-content">
+									<!--Library Content-->
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</aside>
+
+		<aside id="right-sidebar" class="fixed top-[72px] left-[1140px] z-0 w-[400px] h-screen transition-transform -translate-x-full sm:translate-x-0 invisible" aria-label="Sidebar">
+			<div id="right-sidebar+" class="h-full px-3 py-4 overflow-y-auto bg-gray-200 dark:bg-gray-800"></div>
+		</aside>
+
+		<aside id="right-sidebarbar" class="fixed top-[72px] left-80 z-40 w-[820px] h-screen transition-transform -translate-x-full sm:translate-x-0 invisible" aria-label="Sidebar">
+			<div class="h-full pb-16 overflow-y-auto bg-gray-200 dark:bg-black scroll-container">
+				<ul id="right-sidebarbar+" class="w-full divide-y divide-gray-200 dark:divide-gray-700"></ul>
+			</div>
+		</aside>
+
+		<main class="ml-80 px-8 pt-20 pb-4">
+			<div id="loggedin">
+				<div id="oauth" class="mb-4"></div>
+				<div id="new-release"></div>
+				<div id="recommendations" class="mt-12"></div>
+				<div id="get-top=50-tracks" class="mt-12"></div>
+			</div>
+		</main>
+		<main></main>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+		<script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script>
+			const client_id = "";										// Client ID
+			const redirect_uri = "http://localhost/Testing_MWP/public"; // Make sure this matches your redirect URI
+
+			// User Profile start here
+
+			document.addEventListener("DOMContentLoaded", function () {
+				// Check if the user has returned with an authorization code
+				const urlParams = new URLSearchParams(window.location.search);
+				const code = urlParams.get("code");
+				if (code) {
+					// User is authenticated
+					document.getElementById("login-button").style.display = "none";
+					document.getElementById("profile-button").style.display = "block";
+				} else {
+					// User is not authenticated
+					document.getElementById("login-button").style.display = "block";
+					document.getElementById("profile-button").style.display = "none";
+				}
+
+				document.getElementById("login-button").addEventListener("click", function (event) {
+					event.preventDefault(); // Prevent form submission
+
+					const state = generateRandomString(16);
+					const scope = "user-read-private user-read-email user-library-read playlist-read-private playlist-modify-private user-modify-playback-state user-library-modify";
+
+					const url =
+						"https://accounts.spotify.com/authorize?" +
+						"response_type=code" +
+						"&client_id=" +
+						encodeURIComponent(client_id) +
+						"&scope=" +
+						encodeURIComponent(scope) +
+						"&redirect_uri=" +
+						encodeURIComponent(redirect_uri) +
+						"&state=" +
+						encodeURIComponent(state);
+
+					window.location = url; // Redirect to Spotify authorization page
+				});
+			});
+
+			document.body.addEventListener("click", function (event) {
+				if (event.target.id === "dropdown-button") {
+					toggleDropdownMenu();
+				} else if (event.target.id !== "dropdown-menu" && !document.getElementById("dropdown-menu").contains(event.target)) {
+					hideDropdownMenu();
+				} else if (event.target.id === "logout-button") {
+					logout();
+				}
+			});
+
+			function toggleDropdownMenu() {
+				const menu = document.getElementById("dropdown-menu");
+				menu.classList.toggle("hidden");
+			}
+
+			function hideDropdownMenu() {
+				const menu = document.getElementById("dropdown-menu");
+				if (menu) {
+					menu.classList.add("hidden");
+				}
+			}
+
+			function logout() {
+				localStorage.removeItem("access_token");
+				localStorage.removeItem("refresh_token");
+
+				// Spotify logout URL (this will actually logout the user from Spotify)
+				const spotifyLogoutUrl = "https://www.spotify.com/logout/";
+				const spotifyLogoutWindow = window.open(spotifyLogoutUrl, "Spotify Logout", "width=400,height=500,top=" + (window.innerHeight / 2 - 250) + ",left=" + (window.innerWidth / 2 - 200));
+
+				setTimeout(() => {
+					spotifyLogoutWindow.close();
+					window.location = redirect_uri; // Redirect back to your app
+				}, 2000); // Close the popup after 2 seconds
+			}
+			// User Profile end here
+
+			function generateRandomString(length) {
+				var text = "";
+				var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+				for (var i = 0; i < length; i++) {
+					text += possible.charAt(Math.floor(Math.random() * possible.length));
+				}
+				return text;
+			}
+
+			function getQueryStringParams() {
+				const params = {};
+				const queryString = window.location.search.substring(1);
+				const regex = /([^&;=]+)=?([^&;]*)/g;
+				let e;
+				while ((e = regex.exec(queryString))) {
+					params[decodeURIComponent(e[1])] = decodeURIComponent(e[2]);
+				}
+				return params;
+			}
+
+			async function exchangeToken(code) {
+				const response = await fetch("https://accounts.spotify.com/api/token", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+						Authorization: "Basic " + btoa(client_id + ":" + ""),				// Client Secret Here
+					},
+					body: new URLSearchParams({
+						grant_type: "authorization_code",
+						code: code,
+						redirect_uri: redirect_uri,
+					}),
+				});
+				return response.json();
+			}
+
+			async function getUserProfile(token) {
+				const response = await fetch("https://api.spotify.com/v1/me", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getUserAlbums(token) {
+				const response = await fetch("https://api.spotify.com/v1/me/albums", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getArtist(token) {
+				const response = await fetch("https://api.spotify.com/v1/artists/3dI4Io8XE33J2o04ZwjR0Y", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getNewRelease(token) {
+				const response = await fetch("https://api.spotify.com/v1/browse/new-releases", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getRecommendations(token) {
+				const response = await fetch(
+					"https://api.spotify.com/v1/recommendations?seed_artists=2l5m4pAZsByhzQUbj5cOQt%2C6xErgeZYatiaQ36SB5bvi8&seed_tracks=0aLGdSD9P362mNRapnwwVf%2C7v0pUAM7H5nkDwOMOGSZ0f%2C3HQNi2AXjfuA0XfznKFKcg",
+					{
+						headers: {
+							Authorization: "Bearer " + token,
+						},
+					}
+				);
+				return response.json();
+			}
+
+			async function getTop50Tracks(token) {
+				const response = await fetch("https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF/tracks", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getPlayer(token) {
+				const response = await fetch("https://api.spotify.com/v1/me/player", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getAlbumTracks(token, albumId) {
+				const response = await fetch("https://api.spotify.com/v1/albums/" + albumId + "/tracks", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function getAlbum(token, albumId) {
+				const response = await fetch("https://api.spotify.com/v1/albums/" + albumId, {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function saveAlbum(token, albumIds) {
+				const url = `https://api.spotify.com/v1/me/albums?ids=${albumIds.join(",")}`;
+
+				const response = await fetch(url, {
+					method: "PUT",
+					headers: {
+						Authorization: `Bearer ${token}`,
+						"Content-Type": "application/json",
+					},
+				});
+
+				if (response.status === 200) {
+					alert("Albums added to your library!");
+				} else {
+					alert("Something went wrong. Please try again.");
+				}
+			}
+
+			async function removeAlbum(token, albumIds) {
+				if (!Array.isArray(albumIds)) {
+					console.error("albumIds should be an array:", albumIds);
+					return;
+				}
+				const url = `https://api.spotify.com/v1/me/albums?ids=${albumIds.join(",")}`;
+
+				const response = await fetch(url, {
+					method: "DELETE",
+					headers: {
+						Authorization: `Bearer ${token}`,
+						"Content-Type": "application/json",
+					},
+				});
+
+				if (response.status === 200) {
+					alert("Albums removed from your library!");
+				} else {
+					alert("Something went wrong. Please try again.");
+				}
+			}
+
+			async function checkAlbum(token, albumId) {
+				const response = await fetch(`https://api.spotify.com/v1/me/albums/contains?ids=${albumId}`, {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+				return response.json();
+			}
+
+			async function main() {
+				const params = getQueryStringParams();
+				const accessToken = localStorage.getItem("access_token");
+				const refreshToken = localStorage.getItem("refresh_token");
+
+				if (accessToken) {
+					const userProfile = await getUserProfile(accessToken);
+					document.getElementById("login-button").style.display = "none";
+					document.getElementById("profile-button").style.display = "block";
+					const userProfileSource = document.getElementById("user-profile-template").innerHTML;
+					const userProfileTemplate = Handlebars.compile(userProfileSource);
+					const userProfileHtml = userProfileTemplate(userProfile);
+					const oauthSource = document.getElementById("oauth-template").innerHTML;
+					const oauthTemplate = Handlebars.compile(oauthSource);
+					const oauthHtml = oauthTemplate({
+						access_token: accessToken,
+						refresh_token: refreshToken,
+					});
+				} else if (params.code) {
+					const tokenData = await exchangeToken(params.code);
+					localStorage.setItem("access_token", tokenData.access_token);
+					localStorage.setItem("refresh_token", tokenData.refresh_token);
+					window.location = redirect_uri; // Remove code query parameter from URL
+				} else {
+					document.getElementById("login").style.display = "block";
+				}
+
+				const newReleaseData = await getNewRelease(accessToken);
+				const newReleaseSource = document.getElementById("new-release-template").innerHTML;
+				const newReleaseTemplate = Handlebars.compile(newReleaseSource);
+				const newReleaseHtml = newReleaseTemplate(newReleaseData);
+				document.getElementById("new-release").innerHTML = newReleaseHtml;
+				console.log(newReleaseData);
+
+				const recommendationsData = await getRecommendations(accessToken);
+				const recommendationsSource = document.getElementById("recommendations-template").innerHTML;
+				const recommendationsTemplate = Handlebars.compile(recommendationsSource);
+				const recommendationsHtml = recommendationsTemplate(recommendationsData);
+				document.getElementById("recommendations").innerHTML = recommendationsHtml;
+				console.log(recommendationsData);
+
+				const top50TracksData = await getTop50Tracks(accessToken);
+				const top50TracksSource = document.getElementById("top-50-tracks-template").innerHTML;
+				const top50TracksTemplate = Handlebars.compile(top50TracksSource);
+				const top50TracksHtml = top50TracksTemplate(top50TracksData);
+				document.getElementById("get-top=50-tracks").innerHTML = top50TracksHtml;
+				console.log(top50TracksData);
+
+				const libraryData = await getUserAlbums(accessToken);
+				const librarySource = document.getElementById("library-template").innerHTML;
+				const libraryTemplate = Handlebars.compile(librarySource);
+				const libraryHtml = libraryTemplate(libraryData);
+				document.getElementById("library-content").innerHTML = libraryHtml;
+
+				const userProfile = await getUserProfile(accessToken);
+				const userProfileSource = document.getElementById("user-profile-template").innerHTML;
+				const userProfileTemplate = Handlebars.compile(userProfileSource);
+				const userProfileHtml = userProfileTemplate(userProfile);
+				document.getElementById("profile-button").innerHTML = userProfileHtml;
+
+				$(document).ready(function () {
+					// Existing template compilation code...
+					var searchResultsTemplate = Handlebars.compile($("#search-results-template").html());
+
+					$("#default-search").on("input", function () {
+						var query = $(this).val();
+						if (query.length > 0) {
+							$.ajax({
+								url: `https://api.spotify.com/v1/search?q=${query}&type=track`,
+								headers: {
+									Authorization: "Bearer " + accessToken,
+								},
+								success: function (data) {
+									$("#search-results").html(searchResultsTemplate(data));
+								},
+								error: function (xhr, status, error) {
+									console.error("Search API error:", status, error);
+								},
+							});
+						} else {
+							$("#search-results").empty();
+						}
+					});
+				});
+			}
+
+			document.addEventListener("DOMContentLoaded", main);
+
+			$(document).on("click", "#album-button", async function () {
+				$("#right-sidebar, #right-sidebarbar").removeClass("invisible");
+				$("#previous-button").removeClass("invisible");
+				const accessToken = localStorage.getItem("access_token");
+				const albumId = $(this).data("albumid");
+				const albumData = await getAlbum(accessToken, albumId);
+				const checkAlbumData = await checkAlbum(accessToken, albumId);
+				let check = checkAlbumData;
+				if (check[0] == false) {
+					check = 0;
+				} else {
+					check = 1;
+				}
+				albumData.checkAlbum = check; //added
+				const albumSource = document.getElementById("album-info-template").innerHTML;
+				const albumTemplate = Handlebars.compile(albumSource);
+				const albumHtml = albumTemplate(albumData);
+				const trackData = await getAlbumTracks(accessToken, albumId);
+				const trackSource = document.getElementById("track-list-template").innerHTML;
+				const trackTemplate = Handlebars.compile(trackSource);
+				const trackHtml = trackTemplate(trackData);
+				document.getElementById("right-sidebar+").innerHTML = albumHtml;
+				document.getElementById("right-sidebarbar+").innerHTML = trackHtml;
+			});
+
+			$(document).on("click", "#track-button", async function () {
+				$("#right-sidebar, #right-sidebarbar").removeClass("invisible");
+				$("#previous-button").removeClass("invisible");
+				const accessToken = localStorage.getItem("access_token");
+				const trackId = $(this).data("trackid");
+				const albumId = $(this).data("albumid");
+				const albumData = await getAlbum(accessToken, albumId);
+				const checkAlbumData = await checkAlbum(accessToken, albumId);
+				let check = checkAlbumData;
+				if (check[0] == false) {
+					check = 0;
+				} else {
+					check = 1;
+				}
+				albumData.checkAlbum = check; //added
+				const albumSource = document.getElementById("album-info-template").innerHTML;
+				const albumTemplate = Handlebars.compile(albumSource);
+				const albumHtml = albumTemplate(albumData);
+				const trackData = await getAlbumTracks(accessToken, albumId);
+				const trackSource = document.getElementById("track-list-template").innerHTML;
+				const trackTemplate = Handlebars.compile(trackSource);
+				const trackHtml = trackTemplate(trackData);
+
+				document.getElementById("right-sidebar+").innerHTML = albumHtml;
+				document.getElementById("right-sidebarbar+").innerHTML = trackHtml;
+			});
+
+			$(document).on("click", "#library-button", async function () {
+				$("#right-sidebar, #right-sidebarbar").removeClass("invisible");
+				$("#previous-button").removeClass("invisible");
+				const accessToken = localStorage.getItem("access_token");
+				const albumId = $(this).data("albumid");
+				const albumData = await getAlbum(accessToken, albumId);
+				const checkAlbumData = await checkAlbum(accessToken, albumId);
+				let check = checkAlbumData;
+				if (check[0] == false) {
+					check = 0;
+				} else {
+					check = 1;
+				}
+				albumData.checkAlbum = check; //added
+				const albumSource = document.getElementById("album-info-template").innerHTML;
+				const albumTemplate = Handlebars.compile(albumSource);
+				const albumHtml = albumTemplate(albumData);
+				const trackData = await getAlbumTracks(accessToken, albumId);
+				const trackSource = document.getElementById("track-list-template").innerHTML;
+				const trackTemplate = Handlebars.compile(trackSource);
+				const trackHtml = trackTemplate(trackData);
+				document.getElementById("right-sidebar+").innerHTML = albumHtml;
+				document.getElementById("right-sidebarbar+").innerHTML = trackHtml;
+			});
+
+			$(document).on("click", "#previous-button", async function () {
+				$("#right-sidebar, #right-sidebarbar").addClass("invisible");
+				$("#previous-button").addClass("invisible");
+			});
+
+			$("#home-button").click(function () {
+				$("#right-sidebar, #right-sidebarbar").addClass("invisible");
+				$("#previous-button").addClass("invisible");
+			});
+
+			async function saveAlbumButton(value) {
+				updateAlbumButton(value, true);
+				const accessToken = localStorage.getItem("access_token");
+				try {
+					await saveAlbum(accessToken, [value]);
+					console.log("Album saved successfully");
+				} catch (error) {
+					console.error("Failed to save album:", error);
+					updateAlbumButton(value, false);
+				}
+				updateLibrary();
+			}
+
+			async function removeAlbumButton(value) {
+				updateAlbumButton(value, false);
+				const accessToken = localStorage.getItem("access_token");
+				try {
+					await removeAlbum(accessToken, [value]);
+					console.log("Album removed successfully");
+				} catch (error) {
+					console.error("Failed to remove album:", error);
+					updateAlbumButton(value, true);
+				}
+				updateLibrary();
+			}
+
+			function updateAlbumButton(albumId, isSaved) {
+				const buttonContainer = document.querySelector(".album-button-container");
+				if (buttonContainer) {
+					const newButton = isSaved
+						? `<button onclick="removeAlbumButton('${albumId}')" data-albumid="${albumId}" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-4 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Remove Album</button>`
+						: `<button onclick="saveAlbumButton('${albumId}')" data-albumid="${albumId}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-4 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Save Album</button>`;
+					buttonContainer.innerHTML = newButton;
+				} else {
+					console.error("Button container not found");
+				}
+			}
+
+			async function updateLibrary() {
+				const accessToken = localStorage.getItem("access_token");
+				const libraryData = await getUserAlbums(accessToken);
+				const librarySource = document.getElementById("library-template").innerHTML;
+				const libraryTemplate = Handlebars.compile(librarySource);
+				const libraryHtml = libraryTemplate(libraryData);
+				document.getElementById("library-content").innerHTML = libraryHtml;
+
+				// Update the current album button if it's displayed
+				const currentAlbumButton = document.querySelector("#right-sidebar+ button[data-albumid]");
+				if (currentAlbumButton) {
+					const albumId = currentAlbumButton.getAttribute("data-albumid");
+					const isAlbumSaved = libraryData.items.some((item) => item.album.id === albumId);
+					updateAlbumButton(albumId, isAlbumSaved);
+				}
+			}
+
+			async function chooseSearch(id) {
+				$("#default-search").val(null);
+				$("#search-results").empty();
+				$("#right-sidebar, #right-sidebarbar").removeClass("invisible");
+				$("#previous-button").removeClass("invisible");
+				const accessToken = localStorage.getItem("access_token");
+				const albumData = await getAlbum(accessToken, id);
+				const checkAlbumData = await checkAlbum(accessToken, id);
+				let check = checkAlbumData;
+				if (check[0] == false) {
+					check = 0;
+				} else {
+					check = 1;
+				}
+				albumData.checkAlbum = check; //added
+				const albumSource = document.getElementById("album-info-template").innerHTML;
+				const albumTemplate = Handlebars.compile(albumSource);
+				const albumHtml = albumTemplate(albumData);
+				const trackData = await getAlbumTracks(accessToken, id);
+				const trackSource = document.getElementById("track-list-template").innerHTML;
+				const trackTemplate = Handlebars.compile(trackSource);
+				const trackHtml = trackTemplate(trackData);
+				document.getElementById("right-sidebar+").innerHTML = albumHtml;
+				document.getElementById("right-sidebarbar+").innerHTML = trackHtml;
+			}
+
+			Handlebars.registerHelper("formatYear", function (releaseDate) {
+				return new Date(releaseDate).getFullYear();
+			});
+
+			Handlebars.registerHelper("formatDuration", function (duration_ms) {
+				const minutes = Math.floor(duration_ms / 60000);
+				const seconds = ((duration_ms % 60000) / 1000).toFixed(0);
+				return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+			});
+		</script>
+
+		<script id="user-profile-template" type="text/x-handlebars-template">
+			<div class="flex flex-row justify-center">
+				<div class="flex items-center">
+					<img class="w-5 h-5 rounded-full mr-2" src="{{images.0.url}}" alt="{{display_name}}" />
+					<h1 class="font-bold">{{display_name}}</h1>
+					<span id="dropdown-button" type="button" class="dropdown-arrow ml-3 text-lg">&#9662;</span>
+				</div>
+				<div id="dropdown-menu" class="absolute mt-8 w-[195px] bg-slate-500 rounded-lg shadow-xl hidden">
+					<a id="logout-button" class="block py-2 text-sm text-white text-center">Logout</a>
+				</div>
+			</div>
+		</script>
+
+		<script id="oauth-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">OAuth Info</h2>
+			<dl class="mb-4">
+				<dt class="font-semibold">Access token</dt>
+				<dd class="text-overflow">{{access_token}}</dd>
+				<dt class="font-semibold">Refresh token</dt>
+				<dd class="text-overflow">{{refresh_token}}</dd>
+			</dl>
+		</script>
+
+		<script id="album-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">My Albums</h2>
+			<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				{{#each items}}
+					<li class="bg-white rounded-lg shadow-lg overflow-hidden">
+						<div class="flex">
+							<img class="w-32 h-32 object-cover" src="{{album.images.0.url}}" alt="{{album.name}}" />
+							<div class="p-4">
+								<h4 class="text-lg font-semibold">{{album.name}}</h4>
+								<p class="text-gray-600">By {{#each album.artists}}{{this.name}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+							</div>
+						</div>
+					</li>
+				{{/each}}
+			</ul>
+		</script>
+		<script id="new-release-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">New Releases</h2>
+			<div class="scroll-container flex gap-4">
+				{{#each albums.items}}
+					<!-- <div class="flex"> -->
+					<div>
+						<button id="album-button" data-albumid="{{id}}" class="w-44 h-44 object-cover rounded-lg p-0 border-0">
+							<img class="w-44 h-44 object-cover rounded-lg" src="{{images.0.url}}" alt="{{name}}" />
+						</button>
+					</div>
+					<!-- <div class="p-4">
+            <h4 class="text-lg text-black font-semibold">{{name}}</h4>
+            <p class="text-gray-600">By {{#each artists}}{{this.name}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+          </div> -->
+					<!-- </div> -->
+				{{/each}}
+			</div>
+		</script>
+
+		<script id="artist-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">Artist Information</h2>
+			<div class="flex items-center mb-4">
+				<div class="mr-4">
+					<img class="w-44 h-44 object-cover rounded-full" src="{{images.0.url}}" />
+				</div>
+				<div>
+					<dl>
+						<dt class="font-semibold">Name</dt>
+						<dd>{{name}}</dd>
+						<dt class="font-semibold">Id</dt>
+						<dd>{{id}}</dd>
+						<dt class="font-semibold">Spotify URI</dt>
+						<dd><a class="text-blue-500" href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
+						<dt class="font-semibold">Link</dt>
+						<dd><a class="text-blue-500" href="{{href}}">{{href}}</a></dd>
+						<dt class="font-semibold">Profile Image</dt>
+						<dd><a class="text-blue-500" href="{{images.0.url}}">{{images.0.url}}</a></dd>
+					</dl>
+				</div>
+			</div>
+		</script>
+
+		<script id="recommendations-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">Recommended Tracks</h2>
+			<div class="scroll-container flex gap-4">
+				{{#each tracks}}
+					<div class="w-fit">
+						<button id="track-button" class="w-44 h-44 object-cover rounded-lg p-0 border-0" data-albumid="{{album.id}}" data-trackid="{{id}}"><img
+								class="w-44 h-44 object-cover rounded-lg p-0 border-0"
+								src="{{album.images.0.url}}"
+								alt="{{album.name}}"
+							/>
+							<p class="text-gray-200 pt-2">{{name}}</p>
+							<p>{{artists.0.name}}</p>
+						</button>
+					</div>
+				{{/each}}
+			</div>
+		</script>
+
+		<script id="top-50-tracks-template" type="text/x-handlebars-template">
+			<h2 class="text-2xl font-bold mb-4">Top 50 Tracks</h2>
+			<div class="scroll-container flex gap-4">
+				{{#each items}}
+					<div>
+						<button id="track-button" data-albumid="{{track.album.id}}" data-trackid="{{id}}" class="w-44 h-44 object-cover rounded-lg p-0 border-0"><img
+								class="w-44 h-44 object-cover rounded-lg p-0 border-0"
+								src="{{track.album.images.0.url}}"
+								alt="{{album.name}}"
+							/>
+							<p class="text-gray-200 pt-2">{{track.name}}</p>
+							<p>{{track.artists.0.name}}</p>
+						</button>
+					</div>
+				{{/each}}
+			</div>
+		</script>
+
+		<script id="album-info-template" type="text/x-handlebars-template">
+			<div class="album-button-container">
+				{{#if checkAlbum}}
+					<button
+						onclick="removeAlbumButton('{{id}}')"
+						data-albumid="{{id}}"
+						class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-4 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+					>Remove Album</button>
+				{{else}}
+					<button
+						onclick="saveAlbumButton('{{id}}')"
+						data-albumid="{{id}}"
+						class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-4 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+					>Save Album</button>
+				{{/if}}
+			</div>
+
+			<div class="bg-grey-100 p-8 rounded-lg w-full font-mono">
+				<h2 class="text-xl text-gray-100 font-bold text-center pb-2">{{name}}</h2>
+				<p class="text-gray-400 text-lg text-center pb-2 tracking-widest">{{album_type}}·{{formatYear release_date}}</p>
+				<!-- Album Cover -->
+				<img src="{{images.0.url}}" alt="{{name}}" class="w-64 mx-auto rounded-lg mb-4 shadow-2xl" />
+				<!-- Artist Name -->
+				{{#each artists}}
+					<p class="text-gray-200 text-m text-center">{{this.name}}</p>
+				{{/each}}
+				<p class="pt-2 text-gray-400 font-bold text-sm text-center">{{total_tracks}} Songs</p>
+				<p class="pt-2 text-gray-600 font-bold text-sm text-center">{{release_date}}</p>
+			</div>
+			<div>
+				<p class="pt-2 text-gray-500 font-bold text-sm text-center">{{label}}</p>
+			</div>
+		</script>
+
+		<script id="track-list-template" type="text/x-handlebars-template">
+			{{#each items}}
+				<li class="pb-3 sm:pb-4 pt-3 hover:bg-sky-700 rounded-lg px-4">
+					<div class="flex items-center space-x-4 rtl:space-x-reverse">
+						<div class="flex-shrink-0">
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+								{{name}}
+							</p>
+							<p class="text-sm text-gray-500 truncate dark:text-gray-400">
+								{{formatDuration duration_ms}}
+							</p>
+						</div>
+						<div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+							<a href="https://open.spotify.com/track/{{id}}"><button
+									class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-4 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+								>Link to Spotify</button></a>
+						</div>
+					</div>
+				</li>
+			{{/each}}
+		</script>
+
+		<script id="search-results-template" type="text/x-handlebars-template">
+			<div class="grid grid-cols-3 gap-5 mt-2 ml-[350px] pb-5 pr-5 h-[38vh] overflow-y-auto scroll-container">
+				{{#each tracks.items}}
+					<div class="search-result-item flex" onclick="chooseSearch('{{album.id}}')">
+						<img src="{{album.images.0.url}}" alt="{{name}}" class="w-16 h-16 rounded-lg" />
+						<div class="pl-4">
+							<p class="text-gray-100 text-bold">{{name}}</p>
+							<p>{{artists.0.name}}</p>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		</script>
+
+		<script id="library-template" type="text/x-handlebars-template">
+			{{#each items}}
+				<tr id="library-button" data-albumid="{{album.id}}" class="bg-white border-b dark:bg-gray-600 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+					<td class="p-4 w-28">
+						<img src="{{album.images.0.url}}" alt="{{album.name}}" class="w-16 h-16 rounded-lg" />
+					</td>
+					<td class="px-6 py-4 font-semibold text-gray-900 text-center dark:text-white">
+						{{album.name}}
+						{{#each album.artists}}
+							<p class="text-gray-500 dark:text-gray-400">{{this.name}}</p>
+						{{/each}}
+					</td>
+				</tr>
+			{{/each}}
+		</script>
+	</body>
+</html>
