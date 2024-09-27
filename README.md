@@ -1,5 +1,5 @@
 # Spotify Music Finder
-This is the final project for the Multimedia Web Programming course, where we created a rich internet application using Spotify API with AJAX.
+This is the final project for the Multimedia Web Programming course, where me and my friends created a rich internet application using Spotify API with AJAX.
 
 ## Preview
 ![image1](https://github.com/user-attachments/assets/5be90114-10ae-4a53-be15-7dde60cad36b)
